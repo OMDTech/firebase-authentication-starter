@@ -1,7 +1,4 @@
 import React, { useContext, useState, useEffect } from "react";
-import { auth } from "../firebase";
-import firebase from "firebase/compat/app";
-
 
 const AuthContext = React.createContext();
 
@@ -16,9 +13,28 @@ export function AuthProvider({ children }) {
    * @param {String} password
    * @returns {Promise}
    */
-  const signup = (email, password) => {
-    return auth.createUserWithEmailAndPassword(email, password);
+  const signup = async (email, password) => {
+    const body = {
+      username: email,
+      password: password,
+    }
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(body)
+    }
+
+    const response = await fetch("/save/user", options);
+    const json = await response.json();
+    console.log(json);
+    return json;
+
   };
+
+
+
   /**
    * re authenticate  when  email or password changed
    * New Token will generated each time we change email or password
@@ -27,11 +43,7 @@ export function AuthProvider({ children }) {
    * @returns {Promise}
    */
   const reauthenticate = (currentPassword) => {
-    let cred = firebase.auth.EmailAuthProvider.credential(
-      currentUser.email,
-      currentPassword
-    );
-    return currentUser.reauthenticateWithCredential(cred);
+
   };
 
   /**
@@ -41,7 +53,7 @@ export function AuthProvider({ children }) {
    * @returns {Promise}
    */
   const login = (email, password) => {
-    return auth.signInWithEmailAndPassword(email, password);
+
   };
 
   /**
@@ -49,7 +61,7 @@ export function AuthProvider({ children }) {
    * @returns {Promise}
    */
   const logout = () => {
-    return auth.signOut();
+
   };
   /**
    * Sign up using email and passwod
@@ -58,7 +70,7 @@ export function AuthProvider({ children }) {
    * @returns {Promise}
    */
   const resetPassword = (email) => {
-    return auth.sendPasswordResetEmail(email);
+
   };
 
   /**
@@ -68,7 +80,7 @@ export function AuthProvider({ children }) {
    * @returns {Promise}
    */
   const updateEmail = (email) => {
-    return currentUser.updateEmail(email);
+
   };
   /**
    *  Update current User password
@@ -77,16 +89,14 @@ export function AuthProvider({ children }) {
    * @returns {Promise}
    */
   const updatePassword = (password) => {
-    return currentUser.updatePassword(password);
+
   };
   useEffect(() => {
-    //set current user once the user signup or login
-    const unsubsecribe = auth.onAuthStateChanged((user) => {
-      setCurrentUser(user);
-      setIsLoading(false);
-    });
+    setIsLoading(false);
+    setCurrentUser("user");
 
-    return unsubsecribe;
+
+
   });
 
   const value = {
@@ -101,10 +111,10 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {/* dont load children components when Context is Loading */}
-      {!isLoading && children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={value}>
+        {/* dont load children components when Context is Loading */}
+        {!isLoading && children}
+      </AuthContext.Provider>
   );
 }
 
